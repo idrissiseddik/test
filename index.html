@@ -1,0 +1,1703 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <title>MarketPlace - Annonces</title>
+
+    <!-- Bootstrap 5 + Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11">
+    </script>
+
+    <style>
+        /* ===== RESET & GLOBAL ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f6f9;
+            padding-top: 70px;
+            padding-bottom: 80px;
+            min-height: 100vh;
+        }
+
+        /* Forcer la modale SweetAlert2 à être au premier plan */
+        .swal2-container {
+            z-index: 99999 !important;
+        }
+
+        /* ===== LANDING PAGE ===== */
+        #landingPage {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: linear-gradient(145deg, #1a2a6c, #b21f1f, #fdbb2d);
+            background-size: 300% 300%;
+            animation: gradientMove 8s ease infinite;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            color: #fff;
+            text-align: center;
+            padding: 1rem 2rem 1rem;
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        #landingPage.hide {
+            opacity: 0;
+            transform: scale(1.05);
+            pointer-events: none;
+        }
+        @keyframes gradientMove {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Header landing */
+        .landing-header {
+            width: 100%;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            font-size: 1.1rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        .landing-header i {
+            margin-right: 8px;
+            color: #fdbb2d;
+        }
+
+        /* Center content */
+        .landing-center {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 0;
+        }
+        .landing-center .logo-icon {
+            font-size: 4.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.08);
+            }
+        }
+        .landing-center h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        .landing-center p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 400px;
+            margin: 0.5rem auto 2rem;
+            line-height: 1.6;
+        }
+        .landing-center .btn-enter {
+            background: #fff;
+            color: #1a2a6c;
+            border: none;
+            padding: 0.9rem 3.5rem;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+        .landing-center .btn-enter:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+            background: #f8f9fa;
+        }
+
+        /* Footer landing */
+        .landing-footer {
+            width: 100%;
+            padding: 0.8rem 0 0.4rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            font-size: 0.9rem;
+            opacity: 0.9;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+        .landing-footer .contact-link {
+            color: #fff;
+            font-weight: 700;
+            text-decoration: underline;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: none;
+            border: none;
+            font-size: inherit;
+            padding: 0;
+        }
+        .landing-footer .contact-link:hover {
+            color: #fdbb2d;
+            text-decoration: none;
+        }
+        .landing-footer i {
+            margin: 0 4px;
+            color: #fdbb2d;
+        }
+
+        /* ===== HEADER APP ===== */
+        .app-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1030;
+            background: linear-gradient(135deg, #1a2a6c, #2d4373);
+            padding: 0.7rem 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 65px;
+        }
+        .app-header .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+        .app-header .brand i {
+            font-size: 1.6rem;
+            color: #fdbb2d;
+        }
+        .app-header .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .app-header .header-actions .btn-icon {
+            background: rgba(255, 255, 255, 0.12);
+            border: none;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+            cursor: pointer;
+            position: relative;
+        }
+        .app-header .header-actions .btn-icon:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.05);
+        }
+        .app-header .header-actions .btn-icon .badge-dot {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 10px;
+            height: 10px;
+            background: #fdbb2d;
+            border-radius: 50%;
+            border: 2px solid #1a2a6c;
+        }
+
+        /* ===== FOOTER APP ===== */
+        .app-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1030;
+            background: #fff;
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
+            padding: 0.4rem 0.5rem 0.3rem;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: auto;
+            min-height: 75px;
+        }
+        .app-footer .footer-row {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 100%;
+        }
+        .app-footer .footer-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #8a8fa8;
+            font-size: 0.7rem;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            padding: 0.2rem 0.8rem;
+            border-radius: 12px;
+            position: relative;
+        }
+        .app-footer .footer-item i {
+            font-size: 1.5rem;
+            margin-bottom: 2px;
+            transition: all 0.2s;
+        }
+        .app-footer .footer-item span {
+            font-weight: 500;
+        }
+        .app-footer .footer-item.active {
+            color: #1a2a6c;
+        }
+        .app-footer .footer-item.active i {
+            transform: translateY(-2px);
+        }
+        .app-footer .footer-item .fab-add {
+            background: linear-gradient(135deg, #1a2a6c, #2d4373);
+            color: #fff;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-top: -26px;
+            box-shadow: 0 6px 25px rgba(26, 42, 108, 0.35);
+            transition: all 0.3s;
+        }
+        .app-footer .footer-item .fab-add:hover {
+            transform: scale(1.08) rotate(90deg);
+            box-shadow: 0 8px 35px rgba(26, 42, 108, 0.45);
+        }
+        .app-footer .footer-credit {
+            font-size: 0.6rem;
+            color: #a0a5b8;
+            letter-spacing: 0.3px;
+            margin-top: 2px;
+            width: 100%;
+            text-align: center;
+            border-top: 1px solid rgba(0, 0, 0, 0.04);
+            padding-top: 4px;
+        }
+        .app-footer .footer-credit i {
+            margin: 0 4px;
+            color: #b21f1f;
+        }
+
+        /* ===== FILTERS ===== */
+        .filters-bar {
+            background: #fff;
+            padding: 0.8rem 1rem;
+            border-radius: 16px;
+            margin: 0 0 1.2rem 0;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+        .filters-bar .filter-group {
+            flex: 1 1 150px;
+            min-width: 120px;
+        }
+        .filters-bar .filter-group select {
+            width: 100%;
+            padding: 0.5rem 0.8rem;
+            border: 1px solid #e2e6ee;
+            border-radius: 10px;
+            background: #f8f9fc;
+            font-size: 0.9rem;
+            color: #1a2a6c;
+            font-weight: 500;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%231a2a6c' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            cursor: pointer;
+        }
+        .filters-bar .filter-group select:focus {
+            outline: none;
+            border-color: #1a2a6c;
+            box-shadow: 0 0 0 3px rgba(26, 42, 108, 0.15);
+        }
+
+        /* ===== ADS GRID ===== */
+        .ads-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            padding-bottom: 0.5rem;
+        }
+        @media (min-width: 576px) {
+            .ads-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (min-width: 992px) {
+            .ads-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .ad-card {
+            background: #fff;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.03);
+            display: flex;
+            flex-direction: column;
+        }
+        .ad-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.10);
+        }
+        .ad-card .ad-image-wrapper {
+            position: relative;
+            height: 180px;
+            background: #eef1f7;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .ad-card .ad-image-wrapper .carousel,
+        .ad-card .ad-image-wrapper .carousel-inner,
+        .ad-card .ad-image-wrapper .carousel-item {
+            height: 100%;
+            width: 100%;
+        }
+        .ad-card .ad-image-wrapper .carousel-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .ad-card .ad-image-wrapper .carousel-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .ad-card .ad-image-wrapper .single-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .ad-card .ad-image-wrapper .carousel-control-prev,
+        .ad-card .ad-image-wrapper .carousel-control-next {
+            width: 8%;
+            opacity: 0.5;
+        }
+        .ad-card .ad-image-wrapper .carousel-control-prev:hover,
+        .ad-card .ad-image-wrapper .carousel-control-next:hover {
+            opacity: 0.9;
+        }
+        .ad-card .ad-image-wrapper .carousel-indicators {
+            bottom: 4px;
+        }
+        .ad-card .ad-image-wrapper .carousel-indicators button {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #fff;
+            border: none;
+            margin: 0 3px;
+            opacity: 0.5;
+        }
+        .ad-card .ad-image-wrapper .carousel-indicators button.active {
+            opacity: 1;
+            background: #fdbb2d;
+        }
+        .ad-card .ad-image-wrapper .placeholder-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            font-size: 4rem;
+            color: #bcc3d0;
+        }
+        .ad-card .ad-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(26, 42, 108, 0.85);
+            color: #fff;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            backdrop-filter: blur(4px);
+            z-index: 5;
+        }
+        .ad-card .ad-body {
+            padding: 1rem 1rem 0.8rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .ad-card .ad-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #1a2a6c;
+            margin-bottom: 0.3rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .ad-card .ad-message {
+            font-size: 0.9rem;
+            color: #5a607a;
+            margin-bottom: 0.5rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            flex: 1;
+        }
+        .ad-card .ad-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 0.3rem;
+        }
+        .ad-card .ad-price {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #b21f1f;
+        }
+        .ad-card .ad-price span {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #8a8fa8;
+        }
+        .ad-card .ad-city {
+            font-size: 0.75rem;
+            background: #f1f3f8;
+            padding: 0.2rem 0.7rem;
+            border-radius: 20px;
+            color: #5a607a;
+            font-weight: 500;
+        }
+        .ad-card .ad-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 0.7rem;
+            border-top: 1px solid #f0f2f7;
+            padding-top: 0.7rem;
+            flex-wrap: wrap;
+        }
+        .ad-card .ad-actions .btn-contact {
+            flex: 1;
+            border: none;
+            border-radius: 10px;
+            padding: 0.5rem 0;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+            cursor: pointer;
+            text-decoration: none;
+            color: #fff;
+            min-width: 60px;
+        }
+        .ad-card .ad-actions .btn-call {
+            background: #25a56a;
+        }
+        .ad-card .ad-actions .btn-call:hover {
+            background: #1e8e5a;
+            transform: scale(1.02);
+        }
+        .ad-card .ad-actions .btn-whatsapp {
+            background: #25d366;
+        }
+        .ad-card .ad-actions .btn-whatsapp:hover {
+            background: #1da85a;
+            transform: scale(1.02);
+        }
+        .ad-card .ad-actions .btn-contact i {
+            font-size: 1rem;
+        }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            color: #8a8fa8;
+        }
+        .empty-state i {
+            font-size: 4rem;
+            color: #dce1ea;
+            margin-bottom: 1rem;
+        }
+        .empty-state h5 {
+            color: #1a2a6c;
+            font-weight: 700;
+        }
+
+        /* ===== ADMIN PANEL ===== */
+        #adminPanel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9998;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        #adminPanel.show {
+            display: flex;
+        }
+        #adminPanel .admin-box {
+            background: #fff;
+            border-radius: 28px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 1.8rem 1.5rem;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+            animation: slideUp 0.4s ease;
+        }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.96);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        #adminPanel .admin-box .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #f0f2f7;
+            padding-bottom: 0.8rem;
+        }
+        #adminPanel .admin-box .admin-header h4 {
+            color: #1a2a6c;
+            font-weight: 800;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        #adminPanel .admin-box .admin-header h4 i {
+            color: #fdbb2d;
+        }
+        #adminPanel .admin-box .admin-header .btn-close-admin {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            color: #8a8fa8;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        #adminPanel .admin-box .admin-header .btn-close-admin:hover {
+            color: #b21f1f;
+            transform: rotate(90deg);
+        }
+
+        .admin-ad-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.8rem 0.6rem;
+            border-bottom: 1px solid #f0f2f7;
+            transition: background 0.15s;
+            border-radius: 12px;
+        }
+        .admin-ad-item:hover {
+            background: #f8f9fc;
+        }
+        .admin-ad-item .admin-ad-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .admin-ad-item .admin-ad-info .a-title {
+            font-weight: 600;
+            color: #1a2a6c;
+            font-size: 0.95rem;
+        }
+        .admin-ad-item .admin-ad-info .a-sub {
+            font-size: 0.8rem;
+            color: #8a8fa8;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .admin-ad-item .admin-ad-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .admin-ad-item .admin-ad-actions .btn-sm-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .admin-ad-item .admin-ad-actions .btn-edit-ad {
+            background: #eef3ff;
+            color: #1a2a6c;
+        }
+        .admin-ad-item .admin-ad-actions .btn-edit-ad:hover {
+            background: #dce6ff;
+        }
+        .admin-ad-item .admin-ad-actions .btn-del-ad {
+            background: #ffebee;
+            color: #b21f1f;
+        }
+        .admin-ad-item .admin-ad-actions .btn-del-ad:hover {
+            background: #ffd6da;
+        }
+
+        /* ===== UTILITIES ===== */
+        .text-primary-dark {
+            color: #1a2a6c;
+        }
+        .bg-soft-primary {
+            background: #f0f4ff;
+        }
+        .rounded-16 {
+            border-radius: 16px;
+        }
+        .shadow-soft {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Scrollbar style */
+        #adminPanel .admin-box::-webkit-scrollbar {
+            width: 4px;
+        }
+        #adminPanel .admin-box::-webkit-scrollbar-track {
+            background: #f0f2f7;
+            border-radius: 10px;
+        }
+        #adminPanel .admin-box::-webkit-scrollbar-thumb {
+            background: #c5c9d6;
+            border-radius: 10px;
+        }
+
+        /* Toast custom */
+        .swal2-popup {
+            border-radius: 20px !important;
+        }
+
+        /* Ajustement carousel */
+        .ad-card .carousel,
+        .ad-card .carousel-inner,
+        .ad-card .carousel-item {
+            height: 100%;
+        }
+        .ad-card .carousel-control-prev-icon,
+        .ad-card .carousel-control-next-icon {
+            background-size: 60% 60%;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+        }
+        .ad-card .carousel-indicators {
+            margin-bottom: 0;
+        }
+        .ad-card .carousel-indicators [data-bs-target] {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: none;
+            margin: 0 4px;
+            background: rgba(255, 255, 255, 0.6);
+        }
+        .ad-card .carousel-indicators .active {
+            background: #fdbb2d;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== LANDING PAGE ===== -->
+    <div id="landingPage">
+        <!-- Header landing (sans icône main) -->
+        <div class="landing-header">
+            <i class="fas fa-store-alt" style="margin-right:8px;"></i> Bienvenue sur MarketPlace, votre plateforme d'annonces gratuite !
+        </div>
+
+        <!-- Centre -->
+        <div class="landing-center">
+            <div class="logo-icon"><i class="fas fa-store-alt"></i></div>
+            <h1>MarketPlace</h1>
+            <p>Déposez vos annonces gratuitement et trouvez ce que vous cherchez en un clin d'œil.</p>
+            <button class="btn-enter" id="enterAppBtn">
+                <i class="fas fa-arrow-right"></i> Entrer
+            </button>
+            <small style="margin-top:1.5rem;opacity:0.5;font-size:0.75rem;">🔒 Admin : cliquez sur le cadenas en haut</small>
+        </div>
+
+        <!-- Footer landing -->
+        <div class="landing-footer">
+            <i class="fas fa-question-circle"></i> Pour toute question, suggestion ou réclamation,
+            <button class="contact-link" id="contactLinkLanding">Contactez l'admin ici</button>
+            <i class="fas fa-arrow-right"></i>
+        </div>
+    </div>
+
+    <!-- ===== MAIN APP ===== -->
+    <div id="mainApp" style="display:none;">
+
+        <!-- HEADER -->
+        <header class="app-header">
+            <a href="#" class="brand" id="goHomeBtn">
+                <i class="fas fa-store-alt"></i>
+                <span>MarketPlace</span>
+            </a>
+            <div class="header-actions">
+                <button class="btn-icon" id="adminLockBtn" title="Admin">
+                    <i class="fas fa-lock"></i>
+                    <span class="badge-dot"></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT -->
+        <main class="container py-3" style="max-width:1200px;">
+
+            <!-- FILTERS -->
+            <div class="filters-bar">
+                <div class="filter-group">
+                    <select id="filterCategory">
+                        <option value="">Toutes catégories</option>
+                        <option value="Véhicules">🚗 Véhicules</option>
+                        <option value="Électronique">📱 Électronique</option>
+                        <option value="Immobilier">🏠 Immobilier</option>
+                        <option value="Emploi">💼 Emploi</option>
+                        <option value="Services">🛠 Services</option>
+                        <option value="Mode">👗 Mode</option>
+                        <option value="Maison & Jardin">🏡 Maison & Jardin</option>
+                        <option value="Animaux">🐾 Animaux</option>
+                        <option value="Loisirs">🎮 Loisirs</option>
+                        <option value="Sport">⚽ Sport</option>
+                        <option value="Meubles">🪑 Meubles</option>
+                        <option value="Informatique">💻 Informatique</option>
+                        <option value="Téléphonie">📞 Téléphonie</option>
+                        <option value="Bricolage">🔧 Bricolage</option>
+                        <option value="Jardinage">🌱 Jardinage</option>
+                        <option value="Alimentation">🍎 Alimentation</option>
+                        <option value="Livres">📚 Livres</option>
+                        <option value="Musique">🎵 Musique</option>
+                        <option value="Cinéma">🎬 Cinéma</option>
+                        <option value="Jeux vidéo">🕹️ Jeux vidéo</option>
+                        <option value="Autre">📦 Autre</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <select id="filterCity">
+                        <option value="">Toutes villes</option>
+                        <option value="Casablanca">Casablanca</option>
+                        <option value="Rabat">Rabat</option>
+                        <option value="Marrakech">Marrakech</option>
+                        <option value="Tanger">Tanger</option>
+                        <option value="Fès">Fès</option>
+                        <option value="Agadir">Agadir</option>
+                        <option value="Meknès">Meknès</option>
+                        <option value="Oujda">Oujda</option>
+                        <option value="Tétouan">Tétouan</option>
+                        <option value="Kénitra">Kénitra</option>
+                        <option value="Salé">Salé</option>
+                        <option value="Nador">Nador</option>
+                        <option value="Safi">Safi</option>
+                        <option value="Beni Mellal">Beni Mellal</option>
+                        <option value="El Jadida">El Jadida</option>
+                        <option value="Taza">Taza</option>
+                        <option value="Settat">Settat</option>
+                        <option value="Larache">Larache</option>
+                        <option value="Khemisset">Khemisset</option>
+                        <option value="Khouribga">Khouribga</option>
+                        <option value="Ouarzazate">Ouarzazate</option>
+                        <option value="Laâyoune">Laâyoune</option>
+                        <option value="Dakhla">Dakhla</option>
+                        <option value="Essaouira">Essaouira</option>
+                        <option value="Chefchaouen">Chefchaouen</option>
+                        <option value="Azrou">Azrou</option>
+                        <option value="Ifrane">Ifrane</option>
+                        <option value="Midelt">Midelt</option>
+                        <option value="Errachidia">Errachidia</option>
+                        <option value="Guercif">Guercif</option>
+                        <option value="Sidi Kacem">Sidi Kacem</option>
+                        <option value="Sidi Slimane">Sidi Slimane</option>
+                        <option value="Berrechid">Berrechid</option>
+                        <option value="Mohammédia">Mohammédia</option>
+                        <option value="Témara">Témara</option>
+                        <option value="Aït Melloul">Aït Melloul</option>
+                        <option value="Inezgane">Inezgane</option>
+                        <option value="Tiznit">Tiznit</option>
+                        <option value="Zagora">Zagora</option>
+                        <option value="Tan-Tan">Tan-Tan</option>
+                        <option value="Boujdour">Boujdour</option>
+                        <option value="Smara">Smara</option>
+                        <option value="Autre">Autre</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- ADS GRID -->
+            <div id="adsContainer">
+                <div class="ads-grid" id="adsGrid"></div>
+            </div>
+
+        </main>
+
+        <!-- FOOTER APP -->
+        <footer class="app-footer">
+            <div class="footer-row">
+                <button class="footer-item" data-page="home" id="footerHome">
+                    <i class="fas fa-home"></i>
+                    <span>Accueil</span>
+                </button>
+                <button class="footer-item" data-page="add" id="footerAdd">
+                    <div class="fab-add">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                    <span style="margin-top:2px;">Publier</span>
+                </button>
+                <button class="footer-item" data-page="admin" id="footerAdmin">
+                    <i class="fas fa-user-shield"></i>
+                    <span>Admin</span>
+                </button>
+            </div>
+            <div class="footer-credit">
+                <i class="fas fa-code"></i> Créé Par : M.Seddik ELidrissi <i class="fas fa-heart" style="color:#b21f1f;"></i>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- ===== ADMIN PANEL ===== -->
+    <div id="adminPanel">
+        <div class="admin-box">
+            <div class="admin-header">
+                <h4><i class="fas fa-user-shield"></i> Panneau Admin</h4>
+                <button class="btn-close-admin" id="closeAdminPanel"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="adminAdsList">
+                <p class="text-muted text-center py-3">Chargement des annonces...</p>
+            </div>
+            <div class="mt-3 text-center">
+                <button class="btn btn-outline-danger btn-sm" id="adminLogoutBtn">
+                    <i class="fas fa-sign-out-alt me-1"></i> Quitter l'admin
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script>
+        // ============================================================
+        // DATA
+        // ============================================================
+        const STORAGE_KEY = 'marketplace_ads';
+        const ADMIN_PASSWORD = 'Seddik';
+        const CONTACT_PHONE = '212608975435'; // Numéro WhatsApp (sans +)
+
+        let ads = [];
+        let currentFilter = { category: '', city: '' };
+
+        // ============================================================
+        // INIT
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAds();
+            renderAds();
+
+            // Landing
+            document.getElementById('enterAppBtn').addEventListener('click', enterApp);
+            document.getElementById('contactLinkLanding').addEventListener('click', openContactForm);
+
+            // Admin
+            document.getElementById('adminLockBtn').addEventListener('click', openAdminAuth);
+            document.getElementById('footerAdmin').addEventListener('click', openAdminAuth);
+            document.getElementById('closeAdminPanel').addEventListener('click', closeAdminPanel);
+            document.getElementById('adminLogoutBtn').addEventListener('click', closeAdminPanel);
+
+            // Filters
+            document.getElementById('filterCategory').addEventListener('change', applyFilters);
+            document.getElementById('filterCity').addEventListener('change', applyFilters);
+
+            // Footer nav
+            document.getElementById('footerHome').addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+            document.getElementById('footerAdd').addEventListener('click', openAddAdModal);
+            document.getElementById('goHomeBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+
+        // ============================================================
+        // STORAGE
+        // ============================================================
+        function loadAds() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                try { ads = JSON.parse(stored); } catch (e) { ads = []; }
+            }
+            if (!ads || !ads.length) {
+                const sampleImg = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300"%3E%3Crect width="400" height="300" fill="%23dce1ea"/%3E%3Ctext x="200" y="150" font-family="Arial" font-size="20" fill="%238a8fa8" text-anchor="middle" dy=".3em"%3E📸 Image%3C/text%3E%3C/svg%3E';
+                ads = [{
+                    id: 1,
+                    title: 'iPhone 14 Pro Max',
+                    message: 'Très bon état, 256GB, noir, avec chargeur et coque.',
+                    price: '6200',
+                    category: 'Électronique',
+                    city: 'Casablanca',
+                    phone: '0612345678',
+                    images: [sampleImg],
+                    createdAt: Date.now() - 86400000
+                }, {
+                    id: 2,
+                    title: 'Appartement 2 pièces',
+                    message: 'Centre ville, tout équipé, vue sur mer, proche commodités.',
+                    price: '450000',
+                    category: 'Immobilier',
+                    city: 'Rabat',
+                    phone: '0623456789',
+                    images: [sampleImg, sampleImg],
+                    createdAt: Date.now() - 172800000
+                }, {
+                    id: 3,
+                    title: 'Toyota Corolla 2020',
+                    message: 'Diesel, 80 000 km, entretien suivi, climatisation, GPS.',
+                    price: '125000',
+                    category: 'Véhicules',
+                    city: 'Marrakech',
+                    phone: '0634567890',
+                    images: [sampleImg],
+                    createdAt: Date.now() - 259200000
+                }, {
+                    id: 4,
+                    title: 'Tondeuse à gazon',
+                    message: 'Electrique, 1800W, largeur 42cm, comme neuve.',
+                    price: '650',
+                    category: 'Maison & Jardin',
+                    city: 'Tanger',
+                    phone: '0645678901',
+                    images: [],
+                    createdAt: Date.now() - 345600000
+                }, {
+                    id: 5,
+                    title: 'Cours de maths en ligne',
+                    message: 'Prof expérimenté, tous niveaux, premier cours offert.',
+                    price: '150',
+                    category: 'Services',
+                    city: 'Fès',
+                    phone: '0656789012',
+                    images: [],
+                    createdAt: Date.now() - 432000000
+                }];
+                saveAds();
+            }
+        }
+
+        function saveAds() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(ads));
+        }
+
+        function generateId() {
+            return Date.now() + Math.floor(Math.random() * 1000);
+        }
+
+        // ============================================================
+        // LANDING
+        // ============================================================
+        function enterApp() {
+            const landing = document.getElementById('landingPage');
+            landing.classList.add('hide');
+            setTimeout(() => {
+                landing.style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                document.body.style.overflow = 'auto';
+            }, 600);
+        }
+
+        // ============================================================
+        // CONTACT FORM VIA WHATSAPP
+        // ============================================================
+        function openContactForm() {
+            Swal.fire({
+                title: '📩 Contactez l\'admin',
+                html: `
+                    <div style="text-align:left;">
+                        <div class="mb-2">
+                            <label class="form-label fw-bold">Votre Nom *</label>
+                            <input id="contactName" class="form-control" placeholder="Votre nom complet" />
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label fw-bold">Votre numéro de téléphone *</label>
+                            <input id="contactPhone" class="form-control" type="tel" placeholder="0612345678" />
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label fw-bold">Objet *</label>
+                            <input id="contactSubject" class="form-control" placeholder="Objet de votre message" />
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label fw-bold">Message *</label>
+                            <textarea id="contactMessage" class="form-control" rows="3" placeholder="Votre message..."></textarea>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: '📤 Envoyer via WhatsApp',
+                cancelButtonText: 'Annuler',
+                confirmButtonColor: '#25d366',
+                cancelButtonColor: '#8a8fa8',
+                preConfirm: () => {
+                    const name = document.getElementById('contactName').value.trim();
+                    const phone = document.getElementById('contactPhone').value.trim();
+                    const subject = document.getElementById('contactSubject').value.trim();
+                    const message = document.getElementById('contactMessage').value.trim();
+
+                    if (!name || !phone || !subject || !message) {
+                        Swal.showValidationMessage('Tous les champs sont obligatoires');
+                        return false;
+                    }
+                    if (!/^\d{9,10}$/.test(phone.replace(/\s/g, ''))) {
+                        Swal.showValidationMessage('Numéro de téléphone invalide (ex: 0612345678)');
+                        return false;
+                    }
+                    const whatsappMsg = `Nom: ${name}\nTéléphone: ${phone}\nObjet: ${subject}\nMessage: ${message}`;
+                    return { whatsappMsg };
+                }
+            }).then(result => {
+                if (result.isConfirmed && result.value) {
+                    const { whatsappMsg } = result.value;
+                    const url = `https://wa.me/${CONTACT_PHONE}?text=${encodeURIComponent(whatsappMsg)}`;
+                    window.open(url, '_blank');
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: '✅ Message envoyé !',
+                        text: 'Merci de nous avoir contacté. Nous vous répondrons dans les plus brefs délais.',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#1a2a6c',
+                        allowOutsideClick: false
+                    });
+                }
+            });
+        }
+
+        // ============================================================
+        // RENDER ADS
+        // ============================================================
+        function renderAds() {
+            const grid = document.getElementById('adsGrid');
+            const filtered = getFilteredAds();
+
+            if (!filtered.length) {
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column:1/-1;">
+                        <i class="fas fa-box-open"></i>
+                        <h5>Aucune annonce trouvée</h5>
+                        <p class="text-muted">Ajustez vos filtres ou publiez une nouvelle annonce.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(ad => {
+                const images = ad.images && ad.images.length ? ad.images : [];
+                let imageHtml = '';
+                if (images.length === 1) {
+                    imageHtml = `<img src="${images[0]}" alt="Photo" class="single-image" />`;
+                } else if (images.length > 1) {
+                    const carouselId = `carousel-${ad.id}`;
+                    const items = images.map((img, idx) => `
+                        <div class="carousel-item ${idx === 0 ? 'active' : ''}">
+                            <img src="${img}" class="d-block w-100" alt="Photo ${idx+1}" style="height:100%;object-fit:contain;" />
+                        </div>
+                    `).join('');
+                    const indicators = images.map((_, idx) => `
+                        <button type="button" data-bs-target="#${carouselId}" data-bs-slide-to="${idx}" class="${idx === 0 ? 'active' : ''}" aria-label="Slide ${idx+1}"></button>
+                    `).join('');
+                    imageHtml = `
+                        <div id="${carouselId}" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
+                            <div class="carousel-indicators">${indicators}</div>
+                            <div class="carousel-inner">${items}</div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#${carouselId}" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#${carouselId}" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    imageHtml = `<div class="placeholder-icon"><i class="fas fa-image"></i></div>`;
+                }
+
+                return `
+                <div class="ad-card" data-id="${ad.id}">
+                    <div class="ad-image-wrapper">
+                        ${imageHtml}
+                        <span class="ad-badge">${ad.category || 'Général'}</span>
+                    </div>
+                    <div class="ad-body">
+                        <div class="ad-title">${escapeHtml(ad.title)}</div>
+                        <div class="ad-message">${escapeHtml(ad.message)}</div>
+                        <div class="ad-meta">
+                            <div class="ad-price">${formatPrice(ad.price)} <span>DH</span></div>
+                            <span class="ad-city"><i class="fas fa-map-pin me-1"></i>${escapeHtml(ad.city || 'N/A')}</span>
+                        </div>
+                        <div class="ad-actions">
+                            <a href="tel:${ad.phone}" class="btn-contact btn-call"><i class="fas fa-phone"></i> Appeler</a>
+                            <a href="https://wa.me/212${ad.phone.replace(/^0/, '')}" target="_blank" class="btn-contact btn-whatsapp"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+
+            if (typeof bootstrap !== 'undefined' && bootstrap.Carousel) {
+                document.querySelectorAll('.carousel').forEach(el => {
+                    new bootstrap.Carousel(el, { ride: 'carousel', interval: 3000 });
+                });
+            }
+        }
+
+        function getFilteredAds() {
+            let result = [...ads];
+            if (currentFilter.category) {
+                result = result.filter(a => a.category === currentFilter.category);
+            }
+            if (currentFilter.city) {
+                result = result.filter(a => a.city === currentFilter.city);
+            }
+            result.sort((a, b) => b.createdAt - a.createdAt);
+            return result;
+        }
+
+        function applyFilters() {
+            currentFilter.category = document.getElementById('filterCategory').value;
+            currentFilter.city = document.getElementById('filterCity').value;
+            renderAds();
+        }
+
+        // ============================================================
+        // ADD AD
+        // ============================================================
+        function openAddAdModal() {
+            Swal.fire({
+                title: 'Publier une annonce',
+                html: `
+                    <div style="text-align:left;">
+                        <div class="mb-2">
+                            <label class="form-label fw-bold">Titre *</label>
+                            <input id="swalTitle" class="form-control" placeholder="Ex: iPhone 14 Pro Max" />
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label fw-bold">Description *</label>
+                            <textarea id="swalMessage" class="form-control" rows="2" placeholder="Décrivez votre article..."></textarea>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="form-label fw-bold">Prix (DH) *</label>
+                                <input id="swalPrice" class="form-control" type="number" placeholder="150" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-bold">Téléphone *</label>
+                                <input id="swalPhone" class="form-control" type="tel" placeholder="0612345678" />
+                            </div>
+                        </div>
+                        <div class="row g-2 mt-1">
+                            <div class="col-6">
+                                <label class="form-label fw-bold">Catégorie</label>
+                                <select id="swalCategory" class="form-select">
+                                    <option value="Véhicules">🚗 Véhicules</option>
+                                    <option value="Électronique">📱 Électronique</option>
+                                    <option value="Immobilier">🏠 Immobilier</option>
+                                    <option value="Emploi">💼 Emploi</option>
+                                    <option value="Services">🛠 Services</option>
+                                    <option value="Mode">👗 Mode</option>
+                                    <option value="Maison & Jardin">🏡 Maison & Jardin</option>
+                                    <option value="Animaux">🐾 Animaux</option>
+                                    <option value="Loisirs">🎮 Loisirs</option>
+                                    <option value="Sport">⚽ Sport</option>
+                                    <option value="Meubles">🪑 Meubles</option>
+                                    <option value="Informatique">💻 Informatique</option>
+                                    <option value="Téléphonie">📞 Téléphonie</option>
+                                    <option value="Bricolage">🔧 Bricolage</option>
+                                    <option value="Jardinage">🌱 Jardinage</option>
+                                    <option value="Alimentation">🍎 Alimentation</option>
+                                    <option value="Livres">📚 Livres</option>
+                                    <option value="Musique">🎵 Musique</option>
+                                    <option value="Cinéma">🎬 Cinéma</option>
+                                    <option value="Jeux vidéo">🕹️ Jeux vidéo</option>
+                                    <option value="Autre">📦 Autre</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-bold">Ville</label>
+                                <select id="swalCity" class="form-select">
+                                    <option value="Casablanca">Casablanca</option>
+                                    <option value="Rabat">Rabat</option>
+                                    <option value="Marrakech">Marrakech</option>
+                                    <option value="Tanger">Tanger</option>
+                                    <option value="Fès">Fès</option>
+                                    <option value="Agadir">Agadir</option>
+                                    <option value="Meknès">Meknès</option>
+                                    <option value="Oujda">Oujda</option>
+                                    <option value="Tétouan">Tétouan</option>
+                                    <option value="Kénitra">Kénitra</option>
+                                    <option value="Salé">Salé</option>
+                                    <option value="Nador">Nador</option>
+                                    <option value="Safi">Safi</option>
+                                    <option value="Beni Mellal">Beni Mellal</option>
+                                    <option value="El Jadida">El Jadida</option>
+                                    <option value="Taza">Taza</option>
+                                    <option value="Settat">Settat</option>
+                                    <option value="Larache">Larache</option>
+                                    <option value="Khemisset">Khemisset</option>
+                                    <option value="Khouribga">Khouribga</option>
+                                    <option value="Ouarzazate">Ouarzazate</option>
+                                    <option value="Laâyoune">Laâyoune</option>
+                                    <option value="Dakhla">Dakhla</option>
+                                    <option value="Essaouira">Essaouira</option>
+                                    <option value="Chefchaouen">Chefchaouen</option>
+                                    <option value="Azrou">Azrou</option>
+                                    <option value="Ifrane">Ifrane</option>
+                                    <option value="Midelt">Midelt</option>
+                                    <option value="Errachidia">Errachidia</option>
+                                    <option value="Guercif">Guercif</option>
+                                    <option value="Sidi Kacem">Sidi Kacem</option>
+                                    <option value="Sidi Slimane">Sidi Slimane</option>
+                                    <option value="Berrechid">Berrechid</option>
+                                    <option value="Mohammédia">Mohammédia</option>
+                                    <option value="Témara">Témara</option>
+                                    <option value="Aït Melloul">Aït Melloul</option>
+                                    <option value="Inezgane">Inezgane</option>
+                                    <option value="Tiznit">Tiznit</option>
+                                    <option value="Zagora">Zagora</option>
+                                    <option value="Tan-Tan">Tan-Tan</option>
+                                    <option value="Boujdour">Boujdour</option>
+                                    <option value="Smara">Smara</option>
+                                    <option value="Autre">Autre</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <label class="form-label fw-bold">📸 Photos (max 5)</label>
+                            <input id="swalImages" class="form-control" type="file" accept="image/*" multiple />
+                            <small class="text-muted">Sélectionnez une ou plusieurs photos (format image)</small>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: '✅ Publier',
+                cancelButtonText: 'Annuler',
+                confirmButtonColor: '#1a2a6c',
+                cancelButtonColor: '#8a8fa8',
+                preConfirm: () => {
+                    const title = document.getElementById('swalTitle').value.trim();
+                    const message = document.getElementById('swalMessage').value.trim();
+                    const price = document.getElementById('swalPrice').value.trim();
+                    const phone = document.getElementById('swalPhone').value.trim();
+                    const category = document.getElementById('swalCategory').value;
+                    const city = document.getElementById('swalCity').value;
+                    const fileInput = document.getElementById('swalImages');
+                    const files = fileInput.files;
+
+                    if (!title || !message || !price || !phone) {
+                        Swal.showValidationMessage('Tous les champs avec * sont obligatoires');
+                        return false;
+                    }
+                    if (!/^\d{9,10}$/.test(phone.replace(/\s/g, ''))) {
+                        Swal.showValidationMessage('Numéro de téléphone invalide (ex: 0612345678)');
+                        return false;
+                    }
+                    if (files.length > 5) {
+                        Swal.showValidationMessage('Vous ne pouvez sélectionner que 5 photos maximum');
+                        return false;
+                    }
+                    return new Promise((resolve, reject) => {
+                        if (files.length === 0) {
+                            resolve({ title, message, price, phone, category, city, images: [] });
+                            return;
+                        }
+                        const imageData = [];
+                        let completed = 0;
+                        for (let i = 0; i < files.length; i++) {
+                            const reader = new FileReader();
+                            reader.onload = (e) => {
+                                imageData.push(e.target.result);
+                                completed++;
+                                if (completed === files.length) {
+                                    resolve({ title, message, price, phone, category, city, images: imageData });
+                                }
+                            };
+                            reader.onerror = () => {
+                                reject('Erreur lors de la lecture des images');
+                            };
+                            reader.readAsDataURL(files[i]);
+                        }
+                    });
+                }
+            }).then(result => {
+                if (result.isConfirmed && result.value) {
+                    const { title, message, price, phone, category, city, images } = result.value;
+                    const newAd = {
+                        id: generateId(),
+                        title,
+                        message,
+                        price,
+                        category,
+                        city,
+                        phone,
+                        images: images || [],
+                        createdAt: Date.now()
+                    };
+                    ads.unshift(newAd);
+                    saveAds();
+                    renderAds();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Annonce publiée !',
+                        text: 'Votre annonce est maintenant visible par tous.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            }).catch(err => {
+                Swal.fire('Erreur', err || 'Une erreur est survenue', 'error');
+            });
+        }
+
+        // ============================================================
+        // ADMIN
+        // ============================================================
+        function openAdminAuth() {
+            Swal.fire({
+                title: '🔐 Accès Admin',
+                input: 'password',
+                inputLabel: 'Mot de passe',
+                inputPlaceholder: 'Entrez le mot de passe admin',
+                showCancelButton: true,
+                confirmButtonText: 'Entrer',
+                cancelButtonText: 'Annuler',
+                confirmButtonColor: '#1a2a6c',
+                cancelButtonColor: '#8a8fa8',
+                preConfirm: (value) => {
+                    if (value !== ADMIN_PASSWORD) {
+                        Swal.showValidationMessage('Mot de passe incorrect');
+                        return false;
+                    }
+                    return true;
+                }
+            }).then(result => {
+                if (result.isConfirmed) {
+                    showAdminPanel();
+                }
+            });
+        }
+
+        function showAdminPanel() {
+            const panel = document.getElementById('adminPanel');
+            panel.classList.add('show');
+            renderAdminList();
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAdminPanel() {
+            const panel = document.getElementById('adminPanel');
+            panel.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        function renderAdminList() {
+            const container = document.getElementById('adminAdsList');
+            if (!ads.length) {
+                container.innerHTML = `<p class="text-muted text-center py-3">Aucune annonce à gérer.</p>`;
+                return;
+            }
+            container.innerHTML = ads.map(ad => `
+                <div class="admin-ad-item" data-id="${ad.id}">
+                    <div class="admin-ad-info">
+                        <div class="a-title">${escapeHtml(ad.title)}</div>
+                        <div class="a-sub">
+                            <span>${formatPrice(ad.price)} DH</span>
+                            <span>${escapeHtml(ad.category || 'N/A')}</span>
+                            <span><i class="fas fa-map-pin"></i> ${escapeHtml(ad.city || 'N/A')}</span>
+                            <span><i class="fas fa-image"></i> ${(ad.images && ad.images.length) || 0}</span>
+                        </div>
+                    </div>
+                    <div class="admin-ad-actions">
+                        <button class="btn-sm-icon btn-edit-ad" data-id="${ad.id}" title="Modifier"><i class="fas fa-pen"></i></button>
+                        <button class="btn-sm-icon btn-del-ad" data-id="${ad.id}" title="Supprimer"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+
+            container.querySelectorAll('.btn-edit-ad').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = parseInt(btn.dataset.id);
+                    editAd(id);
+                });
+            });
+            container.querySelectorAll('.btn-del-ad').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = parseInt(btn.dataset.id);
+                    deleteAd(id);
+                });
+            });
+        }
+
+        function editAd(id) {
+            const ad = ads.find(a => a.id === id);
+            if (!ad) return;
+
+            const currentCount = (ad.images && ad.images.length) || 0;
+
+            Swal.fire({
+                title: '✏️ Modifier l\'annonce',
+                html: `
+                    <div style="text-align:left;">
+                        <div class="mb-2">
+                            <label class="form-label fw-bold">Titre</label>
+                            <input id="editTitle" class="form-control" value="${escapeHtml(ad.title)}" />
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label fw-bold">Description</label>
+                            <textarea id="editMessage" class="form-control" rows="2">${escapeHtml(ad.message)}</textarea>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="form-label fw-bold">Prix (DH)</label>
+                                <input id="editPrice" class="form-control" type="number" value="${ad.price}" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-bold">Téléphone</label>
+                                <input id="editPhone" class="form-control" type="tel" value="${ad.phone}" />
+                            </div>
+                        </div>
+                        <div class="row g-2 mt-1">
+                            <div class="col-6">
+                                <label class="form-label fw-bold">Catégorie</label>
+                                <select id="editCategory" class="form-select">
+                                    ${['Véhicules','Électronique','Immobilier','Emploi','Services','Mode','Maison & Jardin','Animaux','Loisirs','Sport','Meubles','Informatique','Téléphonie','Bricolage','Jardinage','Alimentation','Livres','Musique','Cinéma','Jeux vidéo','Autre'].map(c =>
+                                        `<option value="${c}" ${c===ad.category?'selected':''}>${c}</option>`
+                                    ).join('')}
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-bold">Ville</label>
+                                <select id="editCity" class="form-select">
+                                    ${['Casablanca','Rabat','Marrakech','Tanger','Fès','Agadir','Meknès','Oujda','Tétouan','Kénitra','Salé','Nador','Safi','Beni Mellal','El Jadida','Taza','Settat','Larache','Khemisset','Khouribga','Ouarzazate','Laâyoune','Dakhla','Essaouira','Chefchaouen','Azrou','Ifrane','Midelt','Errachidia','Guercif','Sidi Kacem','Sidi Slimane','Berrechid','Mohammédia','Témara','Aït Melloul','Inezgane','Tiznit','Zagora','Tan-Tan','Boujdour','Smara','Autre'].map(c =>
+                                        `<option value="${c}" ${c===ad.city?'selected':''}>${c}</option>`
+                                    ).join('')}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <label class="form-label fw-bold">📸 Photos (max 5)</label>
+                            <input id="editImages" class="form-control" type="file" accept="image/*" multiple />
+                            <small class="text-muted">Actuellement ${currentCount} photo(s). Sélectionnez de nouvelles photos pour les remplacer (ou laissez vide pour garder les existantes).</small>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: '💾 Enregistrer',
+                cancelButtonText: 'Annuler',
+                confirmButtonColor: '#1a2a6c',
+                cancelButtonColor: '#8a8fa8',
+                preConfirm: () => {
+                    const title = document.getElementById('editTitle').value.trim();
+                    const message = document.getElementById('editMessage').value.trim();
+                    const price = document.getElementById('editPrice').value.trim();
+                    const phone = document.getElementById('editPhone').value.trim();
+                    const category = document.getElementById('editCategory').value;
+                    const city = document.getElementById('editCity').value;
+                    const fileInput = document.getElementById('editImages');
+                    const files = fileInput.files;
+
+                    if (!title || !message || !price || !phone) {
+                        Swal.showValidationMessage('Tous les champs sont obligatoires');
+                        return false;
+                    }
+                    if (files.length > 5) {
+                        Swal.showValidationMessage('Vous ne pouvez sélectionner que 5 photos maximum');
+                        return false;
+                    }
+
+                    return new Promise((resolve, reject) => {
+                        if (files.length === 0) {
+                            resolve({ title, message, price, phone, category, city, images: ad.images || [] });
+                            return;
+                        }
+                        const imageData = [];
+                        let completed = 0;
+                        for (let i = 0; i < files.length; i++) {
+                            const reader = new FileReader();
+                            reader.onload = (e) => {
+                                imageData.push(e.target.result);
+                                completed++;
+                                if (completed === files.length) {
+                                    resolve({ title, message, price, phone, category, city, images: imageData });
+                                }
+                            };
+                            reader.onerror = () => {
+                                reject('Erreur lors de la lecture des images');
+                            };
+                            reader.readAsDataURL(files[i]);
+                        }
+                    });
+                }
+            }).then(result => {
+                if (result.isConfirmed && result.value) {
+                    const { title, message, price, phone, category, city, images } = result.value;
+                    const idx = ads.findIndex(a => a.id === id);
+                    if (idx !== -1) {
+                        ads[idx] = { ...ads[idx], title, message, price, phone, category, city, images: images };
+                        saveAds();
+                        renderAds();
+                        renderAdminList();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Modifié !',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    }
+                }
+            }).catch(err => {
+                Swal.fire('Erreur', err || 'Une erreur est survenue', 'error');
+            });
+        }
+
+        function deleteAd(id) {
+            Swal.fire({
+                title: '⚠️ Supprimer ?',
+                text: 'Cette action est irréversible.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: '🗑 Supprimer',
+                cancelButtonText: 'Annuler',
+                confirmButtonColor: '#b21f1f',
+                cancelButtonColor: '#8a8fa8'
+            }).then(result => {
+                if (result.isConfirmed) {
+                    ads = ads.filter(a => a.id !== id);
+                    saveAds();
+                    renderAds();
+                    renderAdminList();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Supprimée !',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        }
+
+        // ============================================================
+        // UTILITIES
+        // ============================================================
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return String(text).replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function formatPrice(price) {
+            const num = parseFloat(price);
+            if (isNaN(num)) return price;
+            return num.toLocaleString('fr-FR');
+        }
+
+        document.getElementById('adminPanel').addEventListener('click', function(e) {
+            if (e.target === this) closeAdminPanel();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const panel = document.getElementById('adminPanel');
+                if (panel.classList.contains('show')) closeAdminPanel();
+            }
+        });
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === STORAGE_KEY) {
+                loadAds();
+                renderAds();
+                if (document.getElementById('adminPanel').classList.contains('show')) {
+                    renderAdminList();
+                }
+            }
+        });
+
+        console.log('🔐 Admin password: Seddik');
+        console.log('📦 MarketPlace avec contact WhatsApp');
+    </script>
+
+</body>
+</html>
